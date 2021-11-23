@@ -56,12 +56,15 @@ func (cluster *Cluster) RegInstance(ctx context.Context) (base.Instance, error) 
 
 // UnregInstance 注销本地实例
 func (cluster *Cluster) UnregInstance(ctx context.Context) error {
-	// 无需处理
+	cluster.localInstance = nil
 	return nil
 }
 
 // GetLocalInstance 获取本地实例
 func (cluster *Cluster) GetLocalInstance(ctx context.Context) (base.Instance, error) {
+	if cluster.localInstance == nil {
+		return nil, errors.New("no instance registed")
+	}
 	return cluster.localInstance, nil
 }
 
