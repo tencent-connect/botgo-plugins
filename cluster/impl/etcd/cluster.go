@@ -248,7 +248,6 @@ func (cluster *Cluster) keepAlive(cli *clientv3.Client, ins *Instance) error {
 		if err != nil {
 			log.Errorf("keep alive failed. err:%v", err)
 			// 续租失败，则清除租约，等待下次keepAlive重新putNode
-			_, _ = cli.Revoke(ctx, ins.leaseID)
 			ins.leaseID = 0
 			return err
 		}
