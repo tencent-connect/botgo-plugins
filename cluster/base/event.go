@@ -26,3 +26,23 @@ type WatchResponse struct {
 	Events []Event
 	Err    error
 }
+
+// NewWatchRsp 创建一个Watch响应
+func NewWatchRsp(eventType EventType) *WatchResponse {
+	e := &dftEvent{
+		eventType: eventType,
+	}
+	return &WatchResponse{
+		Events: []Event{e},
+	}
+}
+
+// dftEvent 默认事件结构体
+type dftEvent struct {
+	eventType EventType
+}
+
+// GetType 获取事件类型
+func (e *dftEvent) GetType() EventType {
+	return e.eventType
+}
