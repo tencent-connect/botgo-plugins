@@ -294,13 +294,11 @@ func putNode(ctx context.Context, cli *clientv3.Client, ins *Instance, ttl int64
 	if err != nil {
 		return err
 	}
-
 	// 写入etcd节点，节点内容暂无实际意义，暂且写入1
 	_, err = cli.Put(ctx, ins.GetName(), "1", clientv3.WithLease(rsp.ID))
 	if err != nil {
 		return err
 	}
-
 	ins.leaseID = rsp.ID
 	return nil
 }
