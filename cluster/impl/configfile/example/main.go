@@ -13,7 +13,7 @@ import (
 	config "github.com/tencent-connect/botgo-plugins/cluster/impl/configfile"
 )
 
-// TODO put your cluster name and etcd endpoits here.
+// TODO put your cluster config here
 var (
 	configFile = "./cluster_config.yaml"
 )
