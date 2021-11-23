@@ -179,7 +179,7 @@ func (cluster *Cluster) doWatch(ctx context.Context, cli *clientv3.Client, wc ch
 	ticker := time.NewTicker(cluster.args.WatchWakeInterval)
 	rch := cli.Watch(ctx, cluster.args.ClusterName, clientv3.WithPrefix())
 	// 启动watch时强制推送一次事件
-	wc <- newWatchRsp(base.EventTypeInsChanged)
+	wc <- base.NewWatchRsp(base.EventTypeInsChanged)
 	for {
 		select {
 		case rsp, ok := <-rch:
@@ -191,12 +191,13 @@ func (cluster *Cluster) doWatch(ctx context.Context, cli *clientv3.Client, wc ch
 				if ev.Type != clientv3.EventTypeDelete && ev.Type != clientv3.EventTypePut {
 					continue
 				}
-				wc <- newWatchRsp(base.EventTypeInsChanged)
+				wc <- base.NewWatchRsp(base.EventTypeInsChanged)
 				break
 			}
 		case <-ticker.C:
-			wc <- newWatchRsp(base.EventTypeWatchWake)
+			wc <- base.NewWatchRsp(base.EventTypeWatchWake)
 		case <-ctx.Done():
+			close(wc)
 			return
 		}
 	}
@@ -300,15 +301,6 @@ func putNode(ctx context.Context, cli *clientv3.Client, ins *Instance, ttl int64
 	}
 	ins.leaseID = rsp.ID
 	return nil
-}
-
-func newWatchRsp(eventType base.EventType) *base.WatchResponse {
-	e := &Event{
-		eventType: eventType,
-	}
-	return &base.WatchResponse{
-		Events: []base.Event{e},
-	}
 }
 
 func checkArgs(args *Args) error {

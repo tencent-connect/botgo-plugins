@@ -105,8 +105,8 @@ func (sched *Scheduler) doSchedule() error {
 		if sched.IsExitSchedule() {
 			break
 		}
-		wr := <-wc
-		if wr.Err != nil {
+		wr, ok := <-wc
+		if !ok || wr.Err != nil {
 			time.Sleep(time.Second)
 			continue
 		}

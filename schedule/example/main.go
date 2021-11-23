@@ -72,8 +72,8 @@ func msgHandler(event *dto.WSPayload, m *dto.WSATMessageData) error {
 func waitExit(cluster base.Cluster) {
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM)
-	fmt.Println("exit")
 	<-signalChan
+	fmt.Println("exit")
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 	// 为了避免服务重启频繁触发集群重新调度，这里反注册也可以去掉，只依赖实例超时来删除实例

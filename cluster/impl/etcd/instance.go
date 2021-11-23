@@ -3,9 +3,6 @@ package etcd
 import (
 	"context"
 	"errors"
-	"fmt"
-	"net"
-	"strings"
 
 	"github.com/hanjm/etcd/clientv3"
 	"github.com/tencent-connect/botgo-plugins/cluster/base"
@@ -40,7 +37,7 @@ func newInstance(clusterName string) (*Instance, error) {
 	if clusterName == "" {
 		return nil, errors.New("invalid cluster name")
 	}
-	ip, err := getLocalIP()
+	ip, err := base.GetLocalIP()
 	if err != nil {
 		return nil, err
 	}
@@ -66,46 +63,6 @@ func (ins *Instance) IsValid() bool {
 // IsSame 是否是相同实例
 func (ins *Instance) IsSame(i base.Instance) bool {
 	return ins.name == i.GetName()
-}
-
-// getLocalIP 获取本机IP
-func getLocalIP() (string, error) {
-	interfaces, err := net.Interfaces()
-	if err != nil {
-		return "", err
-	}
-	for _, iface := range interfaces {
-		if iface.Flags&net.FlagLoopback != 0 {
-			// 跳过loopback实例
-			continue
-		}
-		if strings.Index(iface.Name, "eth") == 0 {
-			// 返回首个eth网口的ip
-			return getIP(iface)
-		}
-	}
-	return "", fmt.Errorf("no valid iface:%v", interfaces)
-}
-
-// getIP 获取网口ip
-func getIP(iface net.Interface) (string, error) {
-	addrs, err := iface.Addrs()
-	if err != nil {
-		return "", err
-	}
-	for _, v := range addrs {
-		ipNet, ok := v.(*net.IPNet)
-		if !ok {
-			continue
-		}
-		if ipNet.IP.To4() != nil ||
-			ipNet.IP.To16() != nil {
-			if ip := ipNet.IP.String(); ip != "" {
-				return ip, nil
-			}
-		}
-	}
-	return "", fmt.Errorf("iface have no valid ip:%v", iface)
 }
 
 // cancel 停止

@@ -141,8 +141,13 @@ github.com/stretchr/testify v1.4.0/go.mod h1:j7eGeouHqKxXV5pUuKE4zz7dFj8WfuZ+81P
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/tencent-connect/botgo v0.0.0-20211122124126-a4936f507e42 h1:WLhRgqr1iysdg0lYK/6gP+QDwxBCtEgBrn5DEh/D2kg=
 github.com/tencent-connect/botgo v0.0.0-20211122124126-a4936f507e42/go.mod h1:tevM5u+HybWL417Ef4YexIZj/mkTlB3zfCJ07f+EE+g=
+github.com/tencent-connect/botgo-plugins v0.0.0-20211123142901-c348bd036b11 h1:PpS/RMQFfuRWGVOEOqXc3WWUoxjqkAza5P7Sj8NsHu8=
 github.com/tencent-connect/botgo-plugins/cluster/base v0.0.0-20211122141011-6d922fabf381 h1:yyJPc7X6EUk0MTcV/DcP5zUCxaPg22/vLmegf92bu7c=
 github.com/tencent-connect/botgo-plugins/cluster/base v0.0.0-20211122141011-6d922fabf381/go.mod h1:Mqc/VXp1cMJehHB6TC0EWf2sXsDTZwliNOkytByuxjI=
+github.com/tencent-connect/botgo-plugins/cluster/base v0.0.0-20211123142901-c348bd036b11 h1:b5HrHQEzGL2YYxNKPw2MmZufNNk18ZAli2MuFbxNS64=
+github.com/tencent-connect/botgo-plugins/cluster/base v0.0.0-20211123142901-c348bd036b11/go.mod h1:Mqc/VXp1cMJehHB6TC0EWf2sXsDTZwliNOkytByuxjI=
+github.com/tencent-connect/botgo-plugins/cluster/base v0.0.0-20211123165230-802400d0f54e h1:6dx31CUioOnlkGQB96G/7ORakmOgsD74ty10sYXiEb0=
+github.com/tencent-connect/botgo-plugins/cluster/base v0.0.0-20211123165230-802400d0f54e/go.mod h1:Mqc/VXp1cMJehHB6TC0EWf2sXsDTZwliNOkytByuxjI=
 github.com/tidwall/gjson v1.9.3/go.mod h1:/wbyibRr2FHMks5tjHJ5F8dMZh3AcwJEMf5vlfC0lxk=
 github.com/tidwall/match v1.1.1/go.mod h1:eRSPERbgtNPcGhD8UCthc6PmLEQXEWd3PRB5JTxsfmM=
 github.com/tidwall/pretty v1.2.0/go.mod h1:ITEVvHYasfjBbM0u2Pg8T2nJnzm8xPwvNhhsoaGGjNU=

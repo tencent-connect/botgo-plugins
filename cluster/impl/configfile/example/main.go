@@ -10,20 +10,17 @@ import (
 	"time"
 
 	"github.com/tencent-connect/botgo-plugins/cluster/base"
-	"github.com/tencent-connect/botgo-plugins/cluster/impl/etcd"
+	config "github.com/tencent-connect/botgo-plugins/cluster/impl/configfile"
 )
 
 // TODO put your cluster name and etcd endpoits here.
 var (
-	clusterName = "foo_example_cluster"
-	endpoints   = []string{
-		"your_ip:your_port",
-	}
+	configFile = "./cluster_config.yaml"
 )
 
 func main() {
 	fmt.Printf("start\n")
-	cluster, err := etcd.New(clusterName, endpoints)
+	cluster, err := config.New(configFile)
 	if err != nil {
 		fmt.Printf("new cluster failed. err:%v\n", err)
 		return

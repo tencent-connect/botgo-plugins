@@ -218,25 +218,3 @@ func TestCluster_Watch(t *testing.T) {
 		})
 	}
 }
-
-func Test_newWatchRsp(t *testing.T) {
-	type args struct {
-		eventType base.EventType
-	}
-	tests := []struct {
-		name string
-		args args
-		want *base.WatchResponse
-	}{
-		{name: "c1", args: args{eventType: base.EventTypeInsChanged},
-			want: &base.WatchResponse{Events: []base.Event{&Event{eventType: base.EventTypeInsChanged}}},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := newWatchRsp(tt.args.eventType); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("newWatchRsp() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}

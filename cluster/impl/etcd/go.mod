@@ -6,5 +6,5 @@ require (
 	github.com/agiledragon/gomonkey/v2 v2.3.1
 	github.com/hanjm/etcd v0.7.0
 	github.com/tencent-connect/botgo v0.0.0-20211122124126-a4936f507e42
-	github.com/tencent-connect/botgo-plugins/cluster/base v0.0.0-20211122141011-6d922fabf381
+	github.com/tencent-connect/botgo-plugins/cluster/base v0.0.0-20211123165230-802400d0f54e
 )
