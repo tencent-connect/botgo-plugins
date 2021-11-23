@@ -94,5 +94,7 @@ func waitExit(cluster base.Cluster) {
 	<-signalChan
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
+	// 为了避免服务重启频繁触发集群重新调度，这里反注册也可以去掉，只依赖实例超时来删除实例
+	// 这样如果实例能够快速重启，那么其他实例甚至感觉不出来集群变化，避免了频发调度
 	_ = cluster.UnregInstance(ctx)
 }
