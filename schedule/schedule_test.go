@@ -16,14 +16,15 @@ import (
 )
 
 var testArgs = Args{
-	Cluster:  &mockCluster{},
-	BotAppID: 12345,
-	BotToken: "Bot appid.token",
-	Intent:   dto.IntentGuildAtMessage,
+	Cluster:       &mockCluster{},
+	BotAppID:      12345,
+	BotToken:      "Bot appid.token",
+	Intent:        dto.IntentGuildAtMessage,
+	WatchInterval: time.Minute,
 }
 
 var testScheduler = &Scheduler{
-	args:          testArgs,
+	args:          &testArgs,
 	sessionCtx:    nil,
 	localInstance: &mockInstance{name: "127.0.0.1"},
 }
@@ -32,7 +33,7 @@ type mockCluster struct {
 }
 
 // RegInstance 注册本地实例
-func (m *mockCluster) RegInstance(ctx context.Context) (base.Instance, error) {
+func (m *mockCluster) RegInstance(ctx context.Context, name string) (base.Instance, error) {
 	return nil, nil
 }
 
