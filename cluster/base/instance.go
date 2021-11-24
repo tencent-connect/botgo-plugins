@@ -7,6 +7,4 @@ type Instance interface {
 	GetID() string
 	// IsValid 是否是有效实例
 	IsValid() bool
-	// IsSame() 是否是同一个实例
-	IsSame(ins Instance) bool
 }
