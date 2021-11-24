@@ -17,7 +17,7 @@ import (
 	"github.com/tencent-connect/botgo/token"
 )
 
-// DftWatchInterval 默认watch唤醒间隔，该时间会触发一次检查调度，会拉取AP信息计算是否需要调度，以支持基础侧更新AP最小分区数的场景
+// DftWatchInterval 默认watch唤醒间隔
 const DftWatchInterval = 10 * time.Minute
 
 // Args 调度参数
@@ -30,7 +30,8 @@ type Args struct {
 	BotToken string
 	// Intent 注册事件
 	Intent dto.Intent
-	// WatchInterval
+	// WatchInterval 调度轮询间隔，该间隔时间会触发一次调度检查，拉取AP信息计算是否需要调度，
+	// 以支持基础侧更新AP最小分区数的场景下能够自动按照最新的AP最小分区数进行重新分区
 	WatchInterval time.Duration
 }
 
