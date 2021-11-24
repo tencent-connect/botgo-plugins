@@ -57,7 +57,7 @@ func TestCluster_RegInstance(t *testing.T) {
 	}).Reset()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := testCluster.RegInstance(testCtx)
+			_, err := testCluster.RegInstance(testCtx, "")
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Cluster.RegInstance() error = %v, wantErr %v", err, tt.wantErr)
 				return

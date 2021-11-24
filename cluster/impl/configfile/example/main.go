@@ -27,8 +27,8 @@ func main() {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
-	// 注册当前实例
-	ins, err := cluster.RegInstance(ctx)
+	// 注册当前实例，name传空，默认使用ip作为名称
+	ins, err := cluster.RegInstance(ctx, "")
 	if err != nil {
 		fmt.Printf("reg failed. err:%v\n", err)
 		return

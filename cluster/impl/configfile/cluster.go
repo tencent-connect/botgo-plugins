@@ -1,6 +1,6 @@
 // Package configfile 基于配置文件实现的集群管理器
-// 需要将服务器ip配置到文件中，只有匹配ip的实例才能注册
-// 拉取实例列表时，将返回配置文件中的ip列表
+// 需要将服务器名称配置到文件中，需要保证唯一，只有匹配名称的实例才能注册
+// 拉取实例列表时，将返回配置文件中的实例列表
 package configfile
 
 import (
@@ -37,21 +37,24 @@ func New(filePath string) (base.Cluster, error) {
 	return cluster, nil
 }
 
-// RegInstance 注册本地实例
-func (cluster *Cluster) RegInstance(ctx context.Context) (base.Instance, error) {
-	ip, err := base.GetLocalIP()
-	if err != nil {
-		return nil, err
+// RegInstance 注册本地实例，name传空则默认使用ip作为name，否则请保证该名称与配置文件中的name保持一致
+func (cluster *Cluster) RegInstance(ctx context.Context, name string) (base.Instance, error) {
+	if name == "" {
+		var err error
+		name, err = base.GetLocalIP()
+		if err != nil {
+			return nil, err
+		}
 	}
 	for _, ins := range cluster.baseInsList {
 		// 查找本机是否在配置的ins列表，如果在，则注册成功
-		if ins.GetName() == ip {
+		if ins.GetName() == name {
 			cluster.localInstance = ins
 			return ins, nil
 		}
 	}
 	// 本机不在配置中，返回失败
-	return nil, fmt.Errorf("invalid instance. ip:%v", ip)
+	return nil, fmt.Errorf("invalid instance. name:%v", name)
 }
 
 // UnregInstance 注销本地实例

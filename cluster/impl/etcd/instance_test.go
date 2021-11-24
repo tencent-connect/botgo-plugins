@@ -49,6 +49,7 @@ func Test_newInstanceWithName(t *testing.T) {
 func Test_newInstance(t *testing.T) {
 	type args struct {
 		clusterName string
+		name        string
 	}
 	tests := []struct {
 		name    string
@@ -67,7 +68,7 @@ func Test_newInstance(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := newInstance(tt.args.clusterName)
+			_, err := newInstance(tt.args.clusterName, tt.args.name)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("newInstance() error = %v, wantErr %v", err, tt.wantErr)
 				return

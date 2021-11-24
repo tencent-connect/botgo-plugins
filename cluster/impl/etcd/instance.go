@@ -8,12 +8,10 @@ import (
 	"github.com/tencent-connect/botgo-plugins/cluster/base"
 )
 
-// Instance 实例，以ip作为区分
+// Instance 实例，以name作为区分
 type Instance struct {
-	// 实例名称
+	// 实例名称，需要保证唯一
 	name string
-	// ip 实例ip
-	ip string
 	// ctx 生命周期控制ctx
 	ctx context.Context
 	// ctxCancel 用于反注册时销毁ctx
@@ -33,18 +31,22 @@ func newInstanceWithName(name string) (*Instance, error) {
 }
 
 // newInstance 创建集群实例
-func newInstance(clusterName string) (*Instance, error) {
+func newInstance(clusterName string, name string) (*Instance, error) {
 	if clusterName == "" {
 		return nil, errors.New("invalid cluster name")
 	}
-	ip, err := base.GetLocalIP()
-	if err != nil {
-		return nil, err
+	if name == "" {
+		// 如果没有指定名字，则自动使用ip作为实例名称
+		// TODO 需要兼容容器场景，考虑使用设备id而非ip，避免ip重复
+		var err error
+		name, err = base.GetLocalIP()
+		if err != nil {
+			return nil, err
+		}
 	}
 	ctxLocal, cancel := context.WithCancel(context.Background())
 	return &Instance{
-		name:      clusterName + "_" + ip,
-		ip:        ip,
+		name:      clusterName + "_" + name,
 		ctx:       ctxLocal,
 		ctxCancel: cancel,
 	}, nil

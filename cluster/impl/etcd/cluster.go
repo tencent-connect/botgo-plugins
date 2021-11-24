@@ -26,8 +26,6 @@ type Args struct {
 	HBInterval time.Duration
 	// HBTimeoutCount 心跳超时次数，默认DftHBTimeoutCount
 	HBTimeoutCount int64
-	// WatchWakeInterval watch唤醒间隔，该时间后会自动触发一次TypeWake事件，业务可自行做逻辑
-	WatchWakeInterval time.Duration
 }
 
 const (
@@ -67,23 +65,22 @@ func NewWithArgs(args *Args) (base.Cluster, error) {
 // NewArgs 构建默认参数
 func NewArgs(clusterName string, endpoints []string) *Args {
 	return &Args{
-		ClusterName:       clusterName,
-		EtcdEndPoints:     endpoints,
-		EtcdTimeout:       DftEtcdTimeout,
-		HBInterval:        DftHBInterval,
-		HBTimeoutCount:    DftHBTimeoutCount,
-		WatchWakeInterval: DftWatchWakeInterval,
+		ClusterName:    clusterName,
+		EtcdEndPoints:  endpoints,
+		EtcdTimeout:    DftEtcdTimeout,
+		HBInterval:     DftHBInterval,
+		HBTimeoutCount: DftHBTimeoutCount,
 	}
 }
 
-// RegInstance 注册实例
-func (cluster *Cluster) RegInstance(ctx context.Context) (base.Instance, error) {
+// RegInstance 注册实例，如果name为空，则自动使用ip作为名称，完整实例名称为 clusterName_name
+func (cluster *Cluster) RegInstance(ctx context.Context, name string) (base.Instance, error) {
 	if cluster.localInstance != nil {
 		// 已注册，直接返回
 		return cluster.localInstance, nil
 	}
 	// 创建实例
-	ins, err := newInstance(cluster.args.ClusterName)
+	ins, err := newInstance(cluster.args.ClusterName, name)
 	if err != nil {
 		return nil, err
 	}
@@ -176,7 +173,6 @@ func (cluster *Cluster) Watch(ctx context.Context) (base.WatchChan, error) {
 
 // 启动监听，并将结果转投到watchchan
 func (cluster *Cluster) doWatch(ctx context.Context, cli *clientv3.Client, wc chan *base.WatchResponse) {
-	ticker := time.NewTicker(cluster.args.WatchWakeInterval)
 	rch := cli.Watch(ctx, cluster.args.ClusterName, clientv3.WithPrefix())
 	// 启动watch时强制推送一次事件
 	wc <- base.NewWatchRsp(base.EventTypeInsChanged)
@@ -194,8 +190,6 @@ func (cluster *Cluster) doWatch(ctx context.Context, cli *clientv3.Client, wc ch
 				wc <- base.NewWatchRsp(base.EventTypeInsChanged)
 				break
 			}
-		case <-ticker.C:
-			wc <- base.NewWatchRsp(base.EventTypeWatchWake)
 		case <-ctx.Done():
 			close(wc)
 			return
@@ -318,9 +312,6 @@ func checkArgs(args *Args) error {
 	}
 	if args.HBTimeoutCount < DftHBTimeoutCount {
 		return fmt.Errorf("invalid heartbeat timeout count:%v", args.HBTimeoutCount)
-	}
-	if args.WatchWakeInterval < time.Second {
-		return fmt.Errorf("invalid watch wake interval:%v", args.WatchWakeInterval)
 	}
 	return nil
 }

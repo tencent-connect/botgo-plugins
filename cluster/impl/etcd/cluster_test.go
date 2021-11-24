@@ -41,12 +41,11 @@ func TestNew(t *testing.T) {
 			args: args{clusterName: testClusterName, endpoints: testEndPoints},
 			want: &Cluster{
 				args: Args{
-					ClusterName:       testClusterName,
-					EtcdEndPoints:     testEndPoints,
-					EtcdTimeout:       DftEtcdTimeout,
-					HBInterval:        DftHBInterval,
-					HBTimeoutCount:    DftHBTimeoutCount,
-					WatchWakeInterval: DftWatchWakeInterval,
+					ClusterName:    testClusterName,
+					EtcdEndPoints:  testEndPoints,
+					EtcdTimeout:    DftEtcdTimeout,
+					HBInterval:     DftHBInterval,
+					HBTimeoutCount: DftHBTimeoutCount,
 				},
 			},
 			wantErr: false,
@@ -95,7 +94,7 @@ func TestCluster_RegInstance(t *testing.T) {
 	defer applyEtcd().Reset()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := testCluster.RegInstance(testCtx)
+			_, err := testCluster.RegInstance(testCtx, "")
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Cluster.RegInstance() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -161,7 +160,7 @@ func TestCluster_GetLocalInstance(t *testing.T) {
 func TestCluster_keepAlive(t *testing.T) {
 	testEtcdCluster, _ := testCluster.(*Cluster)
 	testCli, _ := testEtcdCluster.getClient()
-	testIns, _ := newInstance(testClusterName)
+	testIns, _ := newInstance(testClusterName, "")
 	testIns2 := *testIns
 	testIns2.leaseID = 1
 	type args struct {
