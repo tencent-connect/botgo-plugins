@@ -7,8 +7,8 @@ import (
 
 // Cluster 集群管理器接口
 type Cluster interface {
-	// RegInstance 注册本地实例
-	RegInstance(ctx context.Context) (Instance, error)
+	// RegInstance 注册本地实例，实例name要保证集群内唯一
+	RegInstance(ctx context.Context, name string) (Instance, error)
 	// UnregInstance 注销本地实例
 	UnregInstance(ctx context.Context) error
 	// GetLocalInstance 获取本地实例

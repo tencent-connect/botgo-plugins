@@ -12,8 +12,6 @@ const (
 	EventTypeUnknown EventType = 0
 	// EventTypeInsChanged 实例列表发生变化
 	EventTypeInsChanged EventType = 1
-	// EventTypeWatchWake Watch定时Wake事件
-	EventTypeWatchWake EventType = 2
 )
 
 // Event 事件接口
