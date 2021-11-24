@@ -8,10 +8,10 @@ import (
 	"github.com/tencent-connect/botgo-plugins/cluster/base"
 )
 
-// Instance 实例，以name作为区分
+// Instance 实例，以id作为唯一标识
 type Instance struct {
-	// 实例名称，需要保证唯一
-	name string
+	// 实例id，需要保证唯一
+	id string
 	// ctx 生命周期控制ctx
 	ctx context.Context
 	// ctxCancel 用于反注册时销毁ctx
@@ -20,51 +20,46 @@ type Instance struct {
 	leaseID clientv3.LeaseID
 }
 
-// newInstanceWithName 返回instance
-func newInstanceWithName(name string) (*Instance, error) {
-	if name == "" {
-		return nil, errors.New("invalid name")
+// newInstanceWithID 返回instance
+func newInstanceWithID(id string) (*Instance, error) {
+	if id == "" {
+		return nil, errors.New("invalid id")
 	}
 	return &Instance{
-		name: name,
+		id: id,
 	}, nil
 }
 
 // newInstance 创建集群实例
-func newInstance(clusterName string, name string) (*Instance, error) {
+func newInstance(clusterName string, id string) (*Instance, error) {
 	if clusterName == "" {
 		return nil, errors.New("invalid cluster name")
 	}
-	if name == "" {
-		// 如果没有指定名字，则自动使用ip作为实例名称
+	if id == "" {
+		// 如果没有指定id，则自动使用ip作为实例id
 		// TODO 需要兼容容器场景，考虑使用设备id而非ip，避免ip重复
 		var err error
-		name, err = base.GetLocalIP()
+		id, err = base.GetLocalIP()
 		if err != nil {
 			return nil, err
 		}
 	}
 	ctxLocal, cancel := context.WithCancel(context.Background())
 	return &Instance{
-		name:      clusterName + "_" + name,
+		id:        clusterName + "_" + id,
 		ctx:       ctxLocal,
 		ctxCancel: cancel,
 	}, nil
 }
 
-// GetName 获取实例名称
-func (ins *Instance) GetName() string {
-	return ins.name
+// GetID 获取实例ID
+func (ins *Instance) GetID() string {
+	return ins.id
 }
 
 // IsValid 是否是有效实例
 func (ins *Instance) IsValid() bool {
-	return ins.name != ""
-}
-
-// IsSame 是否是相同实例
-func (ins *Instance) IsSame(i base.Instance) bool {
-	return ins.name == i.GetName()
+	return ins.id != ""
 }
 
 // cancel 停止
@@ -74,6 +69,6 @@ func (ins *Instance) cancel() {
 
 // clear 清理ins
 func (ins *Instance) clear() {
-	ins.name = ""
+	ins.id = ""
 	ins.leaseID = 0
 }

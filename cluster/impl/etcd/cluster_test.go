@@ -78,7 +78,7 @@ func applyEtcd() *gomonkey.Patches {
 		{Values: gomonkey.Params{nil, nil}, Times: 10000},
 	}).ApplyMethodSeq(reflect.TypeOf(clientv3.NewKV(testClientV3)), "Get", []gomonkey.OutputCell{
 		{
-			Values: gomonkey.Params{&clientv3.GetResponse{Kvs: []*mvccpb.KeyValue{{Key: []byte(testInsName)}}}, nil},
+			Values: gomonkey.Params{&clientv3.GetResponse{Kvs: []*mvccpb.KeyValue{{Key: []byte(testInsID)}}}, nil},
 			Times:  10000,
 		},
 	})

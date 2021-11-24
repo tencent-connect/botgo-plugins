@@ -37,24 +37,24 @@ func New(filePath string) (base.Cluster, error) {
 	return cluster, nil
 }
 
-// RegInstance 注册本地实例，name传空则默认使用ip作为name，否则请保证该名称与配置文件中的name保持一致
-func (cluster *Cluster) RegInstance(ctx context.Context, name string) (base.Instance, error) {
-	if name == "" {
+// RegInstance 注册本地实例，id传空则默认使用ip作为id，只有配置文件中的id才能注册成功，否则反错
+func (cluster *Cluster) RegInstance(ctx context.Context, id string) (base.Instance, error) {
+	if id == "" {
 		var err error
-		name, err = base.GetLocalIP()
+		id, err = base.GetLocalIP()
 		if err != nil {
 			return nil, err
 		}
 	}
 	for _, ins := range cluster.baseInsList {
 		// 查找本机是否在配置的ins列表，如果在，则注册成功
-		if ins.GetName() == name {
+		if ins.GetID() == id {
 			cluster.localInstance = ins
 			return ins, nil
 		}
 	}
 	// 本机不在配置中，返回失败
-	return nil, fmt.Errorf("invalid instance. name:%v", name)
+	return nil, fmt.Errorf("invalid instance. id:%v", id)
 }
 
 // UnregInstance 注销本地实例

@@ -27,7 +27,7 @@ func main() {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
-	// 注册当前实例，name传空，默认使用ip作为名称
+	// 注册当前实例，id传空，默认使用ip作为名称
 	ins, err := cluster.RegInstance(ctx, "")
 	if err != nil {
 		fmt.Printf("reg failed. err:%v\n", err)
@@ -80,7 +80,7 @@ func getAllInstance(cluster base.Cluster) {
 	}
 	fmt.Printf("get all ins num:%v\n", len(all))
 	for _, ins := range all {
-		fmt.Printf("ins=====>:%v\n", ins.GetName())
+		fmt.Printf("ins=====>:%v\n", ins.GetID())
 	}
 }
 

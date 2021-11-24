@@ -73,14 +73,14 @@ func NewArgs(clusterName string, endpoints []string) *Args {
 	}
 }
 
-// RegInstance 注册实例，如果name为空，则自动使用ip作为名称，完整实例名称为 clusterName_name
-func (cluster *Cluster) RegInstance(ctx context.Context, name string) (base.Instance, error) {
+// RegInstance 注册实例，如果id为空，则自动使用ip作为id，完整实例名称为 clusterName_id
+func (cluster *Cluster) RegInstance(ctx context.Context, id string) (base.Instance, error) {
 	if cluster.localInstance != nil {
 		// 已注册，直接返回
 		return cluster.localInstance, nil
 	}
 	// 创建实例
-	ins, err := newInstance(cluster.args.ClusterName, name)
+	ins, err := newInstance(cluster.args.ClusterName, id)
 	if err != nil {
 		return nil, err
 	}
@@ -131,7 +131,7 @@ func (cluster *Cluster) GetAllInstances(ctx context.Context) ([]base.Instance, e
 	}
 	var instances []base.Instance
 	for _, item := range rsp.Kvs {
-		ins, err := newInstanceWithName(string(item.Key))
+		ins, err := newInstanceWithID(string(item.Key))
 		if err != nil {
 			continue
 		}
@@ -208,7 +208,7 @@ func (cluster *Cluster) startHeartBeat(ins *Instance) error {
 			if r := recover(); r != nil {
 				buf := make([]byte, 4096)
 				buf = buf[:runtime.Stack(buf, false)]
-				fmt.Printf("[HeartBeatPanic]ins:%v, err:%v, stack:\n%s\n", ins.GetName(), r, buf)
+				fmt.Printf("[HeartBeatPanic]ins:%v, err:%v, stack:\n%s\n", ins.GetID(), r, buf)
 				// 如果故障，则退出进程（通常不可能进入到这里）
 				os.Exit(-1)
 			}
@@ -272,7 +272,7 @@ func delNode(ctx context.Context, cli *clientv3.Client, ins *Instance) error {
 	if !ins.IsValid() {
 		return errors.New("invalid instance")
 	}
-	_, err := cli.Delete(ctx, ins.GetName())
+	_, err := cli.Delete(ctx, ins.GetID())
 	_, _ = cli.Revoke(ctx, ins.leaseID)
 	ins.clear()
 	return err
@@ -289,7 +289,7 @@ func putNode(ctx context.Context, cli *clientv3.Client, ins *Instance, ttl int64
 		return err
 	}
 	// 写入etcd节点，节点内容暂无实际意义，暂且写入1
-	_, err = cli.Put(ctx, ins.GetName(), "1", clientv3.WithLease(rsp.ID))
+	_, err = cli.Put(ctx, ins.GetID(), "1", clientv3.WithLease(rsp.ID))
 	if err != nil {
 		return err
 	}
