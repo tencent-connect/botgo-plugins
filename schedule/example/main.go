@@ -27,7 +27,7 @@ var (
 )
 
 func main() {
-	// 先注册本机实例
+	// 创建etcd集群管理器，这里也可以使用 cluster/impl/configfile 实现的配置文件版本的集群管理器
 	cluster, err := etcd.New(clusterName, endpoints)
 	if err != nil {
 		fmt.Printf("new cluster failed. err:%v\n", err)
@@ -35,7 +35,8 @@ func main() {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
-	ins, err := cluster.RegInstance(ctx)
+	// name传空，自动使用ip作为名称
+	ins, err := cluster.RegInstance(ctx, "")
 	if err != nil {
 		fmt.Printf("reg failed. err:%v\n", err)
 		return

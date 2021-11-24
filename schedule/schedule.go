@@ -17,6 +17,9 @@ import (
 	"github.com/tencent-connect/botgo/token"
 )
 
+// DftWatchInterval 默认watch唤醒间隔，该时间会触发一次检查调度，会拉取AP信息计算是否需要调度，以支持基础侧更新AP最小分区数的场景
+const DftWatchInterval = 10 * time.Minute
+
 // Args 调度参数
 type Args struct {
 	// Cluster 集群管理器
@@ -27,11 +30,13 @@ type Args struct {
 	BotToken string
 	// Intent 注册事件
 	Intent dto.Intent
+	// WatchInterval
+	WatchInterval time.Duration
 }
 
 // Scheduler 调度器对象，通过NewScheduler构造对象，提供调度接口
 type Scheduler struct {
-	args          Args
+	args          *Args
 	localInstance base.Instance
 	sessionCtx    *botSessionCtx
 }
@@ -60,14 +65,20 @@ func New(args *Args) (*Scheduler, error) {
 	if !args.isValid() {
 		return nil, fmt.Errorf("invalid args %+v", args)
 	}
+	localArgs := *args
+	if localArgs.WatchInterval == 0 {
+		// 采用默认参数
+		localArgs.WatchInterval = DftWatchInterval
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 	ins, err := args.Cluster.GetLocalInstance(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("get local ins failed. err:%v", err)
 	}
+
 	return &Scheduler{
-		args:          *args,
+		args:          &localArgs,
 		localInstance: ins,
 	}, nil
 }
@@ -97,6 +108,7 @@ func (sched *Scheduler) IsExitSchedule() bool {
 }
 
 func (sched *Scheduler) doSchedule() error {
+	ticker := time.NewTicker(sched.args.WatchInterval)
 	wc, err := sched.args.Cluster.Watch(context.Background())
 	if err != nil {
 		return err
@@ -105,14 +117,23 @@ func (sched *Scheduler) doSchedule() error {
 		if sched.IsExitSchedule() {
 			break
 		}
-		wr, ok := <-wc
-		if !ok || wr.Err != nil {
-			time.Sleep(time.Second)
-			continue
-		}
-		if err := sched.sharding(); err != nil {
-			time.Sleep(time.Second)
-			continue
+		select {
+		case wr, ok := <-wc:
+			if !ok || wr.Err != nil {
+				time.Sleep(time.Second)
+				// TODO 这里!ok场景是对端channel关闭，可以考虑退出进程重启
+				continue
+			}
+			if err := sched.sharding(); err != nil {
+				time.Sleep(time.Second)
+				continue
+			}
+		case <-ticker.C:
+			// 定时器到期，主动做一次sharding，里面会查询最新AP信息决定是否需要进行重新分区调度
+			if err := sched.sharding(); err != nil {
+				time.Sleep(time.Second)
+				continue
+			}
 		}
 	}
 
@@ -132,13 +153,11 @@ func (sched *Scheduler) sharding() error {
 		log.Errorf("get all instances failed, err:%v", err)
 		return err
 	}
-
 	shard, err := sched.calShard(insList)
 	if err != nil {
 		log.Errorf("calculate shard failed, err:%v", err)
 		return err
 	}
-
 	if sched.needReschedule(shard) {
 		if err := sched.reschedule(shard); err != nil {
 			log.Errorf("reschedule failed, err:%v", err)
