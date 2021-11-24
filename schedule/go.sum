@@ -19,6 +19,8 @@ github.com/tencent-connect/botgo-plugins/cluster/base v0.0.0-20211122141011-6d92
 github.com/tencent-connect/botgo-plugins/cluster/base v0.0.0-20211122141011-6d922fabf381/go.mod h1:Mqc/VXp1cMJehHB6TC0EWf2sXsDTZwliNOkytByuxjI=
 github.com/tencent-connect/botgo-plugins/cluster/base v0.0.0-20211124034518-37adad080eb7 h1:Fz+8sKChKw66LkT8LsDLro3G1BGWPfEDEtX9HkGs78Q=
 github.com/tencent-connect/botgo-plugins/cluster/base v0.0.0-20211124034518-37adad080eb7/go.mod h1:Mqc/VXp1cMJehHB6TC0EWf2sXsDTZwliNOkytByuxjI=
+github.com/tencent-connect/botgo-plugins/cluster/base v0.0.0-20211124073815-757ae5fa4913 h1:IsBPvxKKdZBqLpnm0EbgxwD3dQnnmeWSZwWpOo4McTs=
+github.com/tencent-connect/botgo-plugins/cluster/base v0.0.0-20211124073815-757ae5fa4913/go.mod h1:Mqc/VXp1cMJehHB6TC0EWf2sXsDTZwliNOkytByuxjI=
 github.com/tidwall/gjson v1.9.3 h1:hqzS9wAHMO+KVBBkLxYdkEeeFHuqr95GfClRLKlgK0E=
 github.com/tidwall/gjson v1.9.3/go.mod h1:/wbyibRr2FHMks5tjHJ5F8dMZh3AcwJEMf5vlfC0lxk=
 github.com/tidwall/match v1.1.1 h1:+Ho715JplO36QYgwN9PGYNhgZvoUSc9X2c80KVTi+GA=

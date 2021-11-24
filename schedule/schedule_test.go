@@ -26,14 +26,14 @@ var testArgs = Args{
 var testScheduler = &Scheduler{
 	args:          &testArgs,
 	sessionCtx:    nil,
-	localInstance: &mockInstance{name: "127.0.0.1"},
+	localInstance: &mockInstance{id: "127.0.0.1"},
 }
 
 type mockCluster struct {
 }
 
 // RegInstance 注册本地实例
-func (m *mockCluster) RegInstance(ctx context.Context, name string) (base.Instance, error) {
+func (m *mockCluster) RegInstance(ctx context.Context, id string) (base.Instance, error) {
 	return nil, nil
 }
 
@@ -44,7 +44,7 @@ func (m *mockCluster) UnregInstance(ctx context.Context) error {
 
 // GetLocalInstance 获取本地实例
 func (m *mockCluster) GetLocalInstance(ctx context.Context) (base.Instance, error) {
-	return &mockInstance{name: "127.0.0.1"}, nil
+	return &mockInstance{id: "127.0.0.1"}, nil
 }
 
 // GetAllInstances 获取所有实例的列表
@@ -188,7 +188,7 @@ func TestScheduler_calShard(t *testing.T) {
 			name: "case2",
 			args: args{
 				allIns: []base.Instance{
-					&mockInstance{name: ""}, &mockInstance{name: "127.0.0.1"},
+					&mockInstance{id: ""}, &mockInstance{id: "127.0.0.1"},
 				},
 			},
 			want: &shardInfo{
@@ -199,9 +199,9 @@ func TestScheduler_calShard(t *testing.T) {
 			name: "case with min ws shard num 1",
 			args: args{
 				allIns: []base.Instance{
-					&mockInstance{name: "fakeip1"},
-					&mockInstance{name: "fakeip2"},
-					&mockInstance{name: "127.0.0.1"},
+					&mockInstance{id: "fakeip1"},
+					&mockInstance{id: "fakeip2"},
+					&mockInstance{id: "127.0.0.1"},
 				},
 			},
 			want: &shardInfo{
@@ -212,9 +212,9 @@ func TestScheduler_calShard(t *testing.T) {
 			name: "case with min ws shard num 2",
 			args: args{
 				allIns: []base.Instance{
-					&mockInstance{name: "127.0.0.1"},
-					&mockInstance{name: "fakeip3"},
-					&mockInstance{name: "fakeip4"},
+					&mockInstance{id: "127.0.0.1"},
+					&mockInstance{id: "fakeip3"},
+					&mockInstance{id: "fakeip4"},
 				},
 			},
 			want: &shardInfo{
@@ -225,9 +225,9 @@ func TestScheduler_calShard(t *testing.T) {
 			name: "case with min ws shard num 3",
 			args: args{
 				allIns: []base.Instance{
-					&mockInstance{name: "fakeip5"},
-					&mockInstance{name: "127.0.0.1"},
-					&mockInstance{name: "fakeip6"},
+					&mockInstance{id: "fakeip5"},
+					&mockInstance{id: "127.0.0.1"},
+					&mockInstance{id: "fakeip6"},
 				},
 			},
 			want: &shardInfo{
@@ -259,22 +259,17 @@ func TestScheduler_calShard(t *testing.T) {
 
 // mockInstance 模拟服务实例信息
 type mockInstance struct {
-	name string
+	id string
 }
 
 // GetName 获取名称
-func (m *mockInstance) GetName() string {
-	return m.name
+func (m *mockInstance) GetID() string {
+	return m.id
 }
 
 // IsValid 是否有效
 func (m *mockInstance) IsValid() bool {
-	return m.name != ""
-}
-
-// IsSame 是否相同
-func (m *mockInstance) IsSame(ins base.Instance) bool {
-	return m.name == ins.GetName()
+	return m.id != ""
 }
 
 func Test_shardsEqual(t *testing.T) {

@@ -35,7 +35,8 @@ func main() {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
-	// name传空，自动使用ip作为名称，如果是容器场景，可能存在ip相同情况，此时请使用例如容器id作为name，而不要使用ip，避免实例名重复引发问题
+	// id传空，自动使用ip作为名称，如果是容器场景，可能存在ip相同情况，
+	// 此时请使用例如容器id而不要使用ip，避免实例名重复引发问题
 	ins, err := cluster.RegInstance(ctx, "")
 	if err != nil {
 		fmt.Printf("reg failed. err:%v\n", err)

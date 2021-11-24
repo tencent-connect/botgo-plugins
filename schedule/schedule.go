@@ -169,7 +169,7 @@ func (sched *Scheduler) sharding() error {
 }
 
 func (sched *Scheduler) isSelf(ins base.Instance) bool {
-	return sched.localInstance.IsSame(ins)
+	return sched.localInstance.GetID() == ins.GetID()
 }
 
 func (s *shardInfo) isValid() bool {
@@ -285,7 +285,7 @@ func (sched *Scheduler) countValidIns(allIns []base.Instance) (int, uint) {
 	var validInsNum uint
 	selfIdx := -1
 	for _, ins := range allIns {
-		log.Debugf("[Instance] %v", ins.GetName())
+		log.Debugf("[Instance] %v", ins.GetID())
 		if !ins.IsValid() {
 			// 跳过无效instance
 			continue
