@@ -18,7 +18,7 @@ import (
 )
 
 // DftWatchInterval 默认watch唤醒间隔
-const DftWatchInterval = 10 * time.Minute
+const DftWatchInterval = time.Minute
 
 // Args 调度参数
 type Args struct {
@@ -31,7 +31,8 @@ type Args struct {
 	// Intent 注册事件
 	Intent dto.Intent
 	// WatchInterval 调度轮询间隔，该间隔时间会触发一次调度检查，拉取AP信息计算是否需要调度，
-	// 以支持基础侧更新AP最小分区数的场景下能够自动按照最新的AP最小分区数进行重新分区
+	// 以支持单次调度失败时后续能够自动恢复，以及基础侧更新AP最小分区数的场景下能够自动按照最新
+	// 的AP最小分区数进行重新分区
 	WatchInterval time.Duration
 }
 
