@@ -43,13 +43,10 @@ func main() {
 		return
 	}
 	fmt.Printf("reg succ. ins:%+v\n", ins)
-	// 创建调度器
-	schedArgs := &schedule.Args{
-		Cluster:  cluster,
-		BotAppID: botAppID,
-		BotToken: botToken,
-		Intent:   websocket.RegisterHandlers(websocket.ATMessageEventHandler(msgHandler)),
-	}
+	// 创建调度器参数
+	schedArgs := schedule.NewArgs(cluster, botAppID, botToken,
+		websocket.RegisterHandlers(websocket.ATMessageEventHandler(msgHandler)))
+	// 创建调度器，默认会按照AP的shards进行分区，用户也可以自己指定 schedArgs.MinShardNum
 	sched, err := schedule.New(schedArgs)
 	if err != nil {
 		fmt.Printf("New sched failed. err:%v\n", err)

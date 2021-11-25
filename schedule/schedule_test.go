@@ -152,7 +152,7 @@ func TestScheduler_startSessions(t *testing.T) {
 			name: "succ",
 			args: args{
 				si: &shardInfo{
-					shardIDs: []uint{0},
+					shardIDs: []uint32{0},
 					shardNum: 1,
 					ap:       &dto.WebsocketAP{Shards: 5},
 				},
@@ -180,60 +180,65 @@ func TestScheduler_calShard(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:    "case1",
-			args:    args{},
-			want:    &shardInfo{},
-			wantErr: false,
+			name: "case1", args: args{}, want: &shardInfo{}, wantErr: false,
 		}, {
-			name: "case2",
-			args: args{
-				allIns: []base.Instance{
-					&mockInstance{id: ""}, &mockInstance{id: "127.0.0.1"},
-				},
-			},
-			want: &shardInfo{
-				shardIDs: []uint{0},
-				shardNum: 1},
-			wantErr: false,
+			name: "case2", args: args{allIns: []base.Instance{
+				&mockInstance{id: ""},
+				&mockInstance{id: "127.0.0.1"},
+			}}, want: nil, wantErr: true,
 		}, {
-			name: "case with min ws shard num 1",
-			args: args{
-				allIns: []base.Instance{
-					&mockInstance{id: "fakeip1"},
-					&mockInstance{id: "fakeip2"},
-					&mockInstance{id: "127.0.0.1"},
-				},
-			},
-			want: &shardInfo{
-				shardIDs: []uint{2},
-				shardNum: 5},
-			wantErr: false,
+			name: "case3", args: args{allIns: []base.Instance{
+				&mockInstance{id: "fakeip1"},
+				&mockInstance{id: "fakeip2"},
+				&mockInstance{id: "127.0.0.1"},
+			}}, want: &shardInfo{shardIDs: []uint32{2}, shardNum: 5}, wantErr: false,
 		}, {
-			name: "case with min ws shard num 2",
-			args: args{
-				allIns: []base.Instance{
-					&mockInstance{id: "127.0.0.1"},
-					&mockInstance{id: "fakeip3"},
-					&mockInstance{id: "fakeip4"},
-				},
-			},
-			want: &shardInfo{
-				shardIDs: []uint{0, 3},
-				shardNum: 5},
-			wantErr: false,
+			name: "case4", args: args{allIns: []base.Instance{
+				&mockInstance{id: "127.0.0.1"},
+				&mockInstance{id: "fakeip3"},
+				&mockInstance{id: "fakeip4"},
+			}},
+			want: &shardInfo{shardIDs: []uint32{0, 3}, shardNum: 5}, wantErr: false,
 		}, {
-			name: "case with min ws shard num 3",
-			args: args{
-				allIns: []base.Instance{
-					&mockInstance{id: "fakeip5"},
-					&mockInstance{id: "127.0.0.1"},
-					&mockInstance{id: "fakeip6"},
-				},
+			name: "case5", args: args{allIns: []base.Instance{
+				&mockInstance{id: "fakeip5"},
+				&mockInstance{id: "127.0.0.1"},
+				&mockInstance{id: "fakeip6"},
+			}},
+			want: &shardInfo{shardIDs: []uint32{1, 4}, shardNum: 5}, wantErr: false,
+		}, {
+			name: "case6", args: args{allIns: []base.Instance{
+				&mockInstance{id: "fakeip5"},
+				&mockInstance{id: "127.0.0.1"},
+				&mockInstance{id: "fakeip6"},
+			}},
+			want: &shardInfo{shardIDs: []uint32{1}, shardNum: 2}, wantErr: false,
+		}, {
+			name: "case7", args: args{allIns: []base.Instance{
+				&mockInstance{id: "fakeip5"},
+				&mockInstance{id: "fakeip6"},
+				&mockInstance{id: "127.0.0.1"},
+			}},
+			want: &shardInfo{shardIDs: nil, shardNum: 2}, wantErr: false,
+		}, {
+			name: "case8", args: args{allIns: []base.Instance{
+				&mockInstance{id: "127.0.0.1"},
+				&mockInstance{id: "fakeip6"},
+				&mockInstance{id: "fakeip5"},
+			}},
+			want: &shardInfo{shardIDs: []uint32{0}, shardNum: 2}, wantErr: false,
+		}, {
+			name: "case8", args: args{allIns: []base.Instance{
+				&mockInstance{id: "127.0.0.1"}},
 			},
-			want: &shardInfo{
-				shardIDs: []uint{1, 4},
-				shardNum: 5},
-			wantErr: false,
+			want: &shardInfo{shardIDs: []uint32{0}, shardNum: 1}, wantErr: false,
+		}, {
+			name: "case9", args: args{allIns: []base.Instance{
+				&mockInstance{id: "fakeip6"},
+				&mockInstance{id: "fakeip5"},
+				&mockInstance{id: "127.0.0.1"},
+			}},
+			want: &shardInfo{shardIDs: []uint32{2}, shardNum: 3}, wantErr: false,
 		},
 	}
 
@@ -242,6 +247,9 @@ func TestScheduler_calShard(t *testing.T) {
 	defer gomonkey.ApplyMethodSeq(reflect.TypeOf(openAPI), "WS", []gomonkey.OutputCell{
 		{Values: gomonkey.Params{&dto.WebsocketAP{}, nil}, Times: 1},
 		{Values: gomonkey.Params{&dto.WebsocketAP{Shards: 5}, nil}, Times: 3},
+		{Values: gomonkey.Params{&dto.WebsocketAP{Shards: 2}, nil}, Times: 3},
+		{Values: gomonkey.Params{&dto.WebsocketAP{Shards: 1}, nil}, Times: 1},
+		{Values: gomonkey.Params{&dto.WebsocketAP{Shards: 3}, nil}, Times: 1},
 	}).Reset()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -250,7 +258,7 @@ func TestScheduler_calShard(t *testing.T) {
 				t.Errorf("Scheduler.calShard() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got.shardIDs, tt.want.shardIDs) || got.shardNum != tt.want.shardNum {
+			if got != nil && (!reflect.DeepEqual(got.shardIDs, tt.want.shardIDs) || got.shardNum != tt.want.shardNum) {
 				t.Errorf("Scheduler.calShard() = %v, want %v", got, tt.want)
 			}
 		})
@@ -274,8 +282,8 @@ func (m *mockInstance) IsValid() bool {
 
 func Test_shardsEqual(t *testing.T) {
 	type args struct {
-		a []uint
-		b []uint
+		a []uint32
+		b []uint32
 	}
 	tests := []struct {
 		name string
@@ -285,15 +293,15 @@ func Test_shardsEqual(t *testing.T) {
 		{
 			name: "same",
 			args: args{
-				a: []uint{1, 2},
-				b: []uint{1, 2},
+				a: []uint32{1, 2},
+				b: []uint32{1, 2},
 			},
 			want: true,
 		}, {
 			name: "not same",
 			args: args{
-				a: []uint{2},
-				b: []uint{1, 2},
+				a: []uint32{2},
+				b: []uint32{1, 2},
 			},
 			want: false,
 		}, {
@@ -306,8 +314,8 @@ func Test_shardsEqual(t *testing.T) {
 		}, {
 			name: "same_empty",
 			args: args{
-				a: []uint{},
-				b: []uint{},
+				a: []uint32{},
+				b: []uint32{},
 			},
 			want: true,
 		},
@@ -316,6 +324,30 @@ func Test_shardsEqual(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := shardsEqual(tt.args.a, tt.args.b); got != tt.want {
 				t.Errorf("shardsEqual() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestNewArgs(t *testing.T) {
+	type args struct {
+		cluster  base.Cluster
+		botAppID uint64
+		botToken string
+		intent   dto.Intent
+	}
+	tests := []struct {
+		name string
+		args args
+		want *Args
+	}{
+		{name: "c1", args: args{}, want: &Args{}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := NewArgs(tt.args.cluster, tt.args.botAppID, tt.args.botToken,
+				tt.args.intent); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewArgs() = %v, want %v", got, tt.want)
 			}
 		})
 	}

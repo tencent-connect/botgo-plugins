@@ -80,7 +80,7 @@ func (mgr *SessionManager) Start() error {
 	}
 }
 
-func (mgr *SessionManager) newHolder(sid uint) *sessionHolder {
+func (mgr *SessionManager) newHolder(sid uint32) *sessionHolder {
 	return &sessionHolder{
 		session: dto.Session{
 			URL:     mgr.si.ap.URL,
@@ -88,8 +88,8 @@ func (mgr *SessionManager) newHolder(sid uint) *sessionHolder {
 			Intent:  *mgr.intents,
 			LastSeq: 0,
 			Shards: dto.ShardConfig{
-				ShardID:    uint32(sid),
-				ShardCount: uint32(mgr.si.shardNum),
+				ShardID:    sid,
+				ShardCount: mgr.si.shardNum,
 			},
 		},
 		mgr: mgr,

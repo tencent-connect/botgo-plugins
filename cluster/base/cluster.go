@@ -15,6 +15,6 @@ type Cluster interface {
 	GetLocalInstance(ctx context.Context) (Instance, error)
 	// GetAllInstances 获取所有实例的列表
 	GetAllInstances(ctx context.Context) ([]Instance, error)
-	// Watch 监听集群事件
+	// Watch 监听集群事件，注意实现方应该Watch被调用的时候主动push一次EventTypeInsChanged事件
 	Watch(ctx context.Context) (WatchChan, error)
 }

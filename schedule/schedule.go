@@ -4,6 +4,7 @@ package schedule
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"runtime"
@@ -17,8 +18,12 @@ import (
 	"github.com/tencent-connect/botgo/token"
 )
 
-// DftWatchInterval 默认watch唤醒间隔
-const DftWatchInterval = time.Minute
+const (
+	// DftWatchInterval 默认轮询间隔1分钟
+	DftWatchInterval = time.Minute
+	// MaxShardNum 最大分区数 10000
+	MaxShardNum = uint32(10000)
+)
 
 // Args 调度参数
 type Args struct {
@@ -30,10 +35,15 @@ type Args struct {
 	BotToken string
 	// Intent 注册事件
 	Intent dto.Intent
+
+	// 以下为可选参数
+
 	// WatchInterval 调度轮询间隔，该间隔时间会触发一次调度检查，拉取AP信息计算是否需要调度，
 	// 以支持单次调度失败时后续能够自动恢复，以及基础侧更新AP最小分区数的场景下能够自动按照最新
 	// 的AP最小分区数进行重新分区
 	WatchInterval time.Duration
+	// MinShardNum 最小分区数，不能超过MaxShardNum，调度时取MinShardNum和AP信息中的Shards的较大值作为分区总数
+	MinShardNum uint32
 }
 
 // Scheduler 调度器对象，通过NewScheduler构造对象，提供调度接口
@@ -46,9 +56,9 @@ type Scheduler struct {
 // shardInfo bot分区信息
 type shardInfo struct {
 	// shardIDs 需要处理的分区id列表
-	shardIDs []uint
+	shardIDs []uint32
 	// shardNum 分区总数
-	shardNum uint
+	shardNum uint32
 	// ap bot gateway ap信息
 	ap *dto.WebsocketAP
 }
@@ -59,6 +69,16 @@ type botSessionCtx struct {
 	cancelFunc context.CancelFunc
 	si         *shardInfo
 	wg         sync.WaitGroup
+}
+
+// NewArgs 获取参数
+func NewArgs(cluster base.Cluster, botAppID uint64, botToken string, intent dto.Intent) *Args {
+	return &Args{
+		Cluster:  cluster,
+		BotAppID: botAppID,
+		BotToken: botToken,
+		Intent:   intent,
+	}
 }
 
 // New 创建调度器对象
@@ -181,14 +201,14 @@ func (s *shardInfo) isSame(si *shardInfo) bool {
 	return shardsEqual(s.shardIDs, si.shardIDs) && s.shardNum == si.shardNum
 }
 
-func shardsEqual(a, b []uint) bool {
+func shardsEqual(a, b []uint32) bool {
 	if len(a) != len(b) {
 		return false
 	}
 	if (a == nil) != (b == nil) {
 		return false
 	}
-	set := make(map[uint]bool, len(a))
+	set := make(map[uint32]bool, len(a))
 	for _, v := range a {
 		set[v] = true
 	}
@@ -242,6 +262,16 @@ func (sched *Scheduler) getAP() (*dto.WebsocketAP, error) {
 	return ap, nil
 }
 
+func (sched *Scheduler) getMinShardNum(ap *dto.WebsocketAP, validInsNum uint32) (uint32, error) {
+	if ap.Shards == 0 {
+		return 0, errors.New("invalid ap shards")
+	}
+	if ap.Shards < sched.args.MinShardNum {
+		return sched.args.MinShardNum, nil
+	}
+	return ap.Shards, nil
+}
+
 func (sched *Scheduler) calShard(allIns []base.Instance) (*shardInfo, error) {
 	si := &shardInfo{}
 	// 过滤有效实例，获取实例idx和数量
@@ -257,33 +287,30 @@ func (sched *Scheduler) calShard(allIns []base.Instance) (*shardInfo, error) {
 		log.Errorf("Call getAP failed. err:%v", err)
 		return nil, err
 	}
-	wsMinShardNum := uint(si.ap.Shards)
-	// 取有效实例数和最小分区数中较大的值为分区数
-	if validInsNum < wsMinShardNum {
-		si.shardNum = wsMinShardNum
-		// 计算当前实例需要处理的分区id列表
-		round := wsMinShardNum / validInsNum
-		for i := uint(0); i < round; i++ {
-			// 将id一轮一轮的加入到列表中
-			si.shardIDs = append(si.shardIDs, i*validInsNum+uint(selfIdx))
-		}
-		// 处理余数
-		tmp := wsMinShardNum % validInsNum
-		if tmp != 0 && tmp > uint(selfIdx) {
-			si.shardIDs = append(si.shardIDs, round*validInsNum+uint(selfIdx))
-		}
-	} else {
-		// 实例数即为分区数时，每个实例以自己的idx作为需要消费的分区id
-		si.shardNum = validInsNum
-		si.shardIDs = append(si.shardIDs, uint(selfIdx))
+	minShardNum, err := sched.getMinShardNum(si.ap, validInsNum)
+	if err != nil {
+		log.Errorf("getMinShardNum failed. err:%v", err)
+		return nil, err
+	}
+	si.shardNum = minShardNum
+	// 计算当前实例需要处理的分区id列表
+	round := minShardNum / validInsNum
+	for i := uint32(0); i < round; i++ {
+		// 将id一轮一轮的加入到列表中
+		si.shardIDs = append(si.shardIDs, i*validInsNum+uint32(selfIdx))
+	}
+	// 处理余数
+	tmp := minShardNum % validInsNum
+	if tmp != 0 && tmp > uint32(selfIdx) {
+		si.shardIDs = append(si.shardIDs, round*validInsNum+uint32(selfIdx))
 	}
 	log.Infof("cal shard:%v", si)
 	return si, nil
 }
 
 // countValidIns 计算有效实例，返回自己在有效实例中的idx和有效实例总数
-func (sched *Scheduler) countValidIns(allIns []base.Instance) (int, uint) {
-	var validInsNum uint
+func (sched *Scheduler) countValidIns(allIns []base.Instance) (int, uint32) {
+	var validInsNum uint32
 	selfIdx := -1
 	for _, ins := range allIns {
 		log.Debugf("[Instance] %v", ins.GetID())
@@ -363,7 +390,8 @@ func (args *Args) isValid() bool {
 	if args.Intent == 0 ||
 		args.BotAppID == 0 ||
 		args.BotToken == "" ||
-		args.Cluster == nil {
+		args.Cluster == nil ||
+		args.MinShardNum > MaxShardNum {
 		return false
 	}
 	return true

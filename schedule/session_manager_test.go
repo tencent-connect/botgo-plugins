@@ -12,7 +12,7 @@ import (
 )
 
 var testShardInfo = &shardInfo{
-	shardIDs: []uint{0, 1},
+	shardIDs: []uint32{0, 1},
 	shardNum: 2,
 	ap: &dto.WebsocketAP{
 		Shards: 2,
