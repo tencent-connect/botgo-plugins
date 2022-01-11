@@ -17,8 +17,12 @@ import (
 
 // canNotResumeErrSet 不能进行 resume 操作的错误码
 var canNotResumeErrSet = map[int]bool{
-	errs.CodeConnCloseErr:   true,
-	errs.CodeInvalidSession: true,
+	errs.CodeConnCloseCantResume: true,
+}
+
+// canNotIdentifyErrSet 不能进行 identify 操作的错误码
+var canNotIdentifyErrSet = map[int]bool{
+	errs.CodeConnCloseCantIdentify: true,
 }
 
 // sessionHolder 持有并维护session和对应websocket
@@ -148,6 +152,10 @@ func (holder *sessionHolder) connectAndListen() {
 			currentSession.ID = ""
 			currentSession.LastSeq = 0
 		}
+		if CanNotIdentify(err) {
+			msg := fmt.Sprintf("can not identify because server return %+v, so process exit", err)
+			panic(msg) // 当机器人被下架，或者封禁，将不能再连接，所以 panic
+		}
 		return
 	}
 }
@@ -169,6 +177,15 @@ func (holder *sessionHolder) serve() {
 func canNotResume(err error) bool {
 	e := errs.Error(err)
 	if flag, ok := canNotResumeErrSet[e.Code()]; ok {
+		return flag
+	}
+	return false
+}
+
+// CanNotIdentify 是否是不能够 identify 的错误
+func CanNotIdentify(err error) bool {
+	e := errs.Error(err)
+	if flag, ok := canNotIdentifyErrSet[e.Code()]; ok {
 		return flag
 	}
 	return false
