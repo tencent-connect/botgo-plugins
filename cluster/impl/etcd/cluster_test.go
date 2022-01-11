@@ -7,9 +7,9 @@ import (
 	"testing"
 
 	"github.com/agiledragon/gomonkey/v2"
-	"github.com/hanjm/etcd/clientv3"
-	"github.com/hanjm/etcd/mvcc/mvccpb"
 	"github.com/tencent-connect/botgo-plugins/cluster/base"
+	mvccpb "go.etcd.io/etcd/api/v3/mvccpb"
+	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
 var (

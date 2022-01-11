@@ -9,9 +9,9 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/hanjm/etcd/clientv3"
 	"github.com/tencent-connect/botgo-plugins/cluster/base"
 	"github.com/tencent-connect/botgo/log"
+	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
 // Args 集群参数

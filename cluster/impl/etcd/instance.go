@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 
-	"github.com/hanjm/etcd/clientv3"
 	"github.com/tencent-connect/botgo-plugins/cluster/base"
+	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
 // Instance 实例，以id作为唯一标识
