@@ -11,8 +11,8 @@
 `-- schedule        // 调度器模块，该模块基于cluster/base提供的接口，实现机器人集群的sharding计算管理功能，可搭配cluster/impl下的实现来使用
 ```
 
-# 加入官方社区
+## 加入官方社区
 
-欢迎扫码加入 **QQ 频道开发者社区**。
+欢迎扫码加入**QQ 频道开发者社区**。
 
-<img alt="QQ频道开发者社区" src="https://mpqq.gtimg.cn/privacy-info/qq-guild.png" width="400">
+![开发者社区](https://mpqq.gtimg.cn/privacy/qq_guild_developer.png)
